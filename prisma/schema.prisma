@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String         @id @default(cuid())
+  enterpriseId    String?
+  name            String
+  phonePrefix     String?
+  phoneNumber     String?
+  email           String         @unique
+  emailFluvia     String?
+  passwordHash    String
+  roleId          String
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  
+  role            Role           @relation(fields: [roleId], references: [id])
+  refreshTokens   RefreshToken[]
+
+  @@index([roleId])
+  @@index([enterpriseId])
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  users       User[]
+  permissions RolePermission[]
+}
+
+model Permission {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  roles       RolePermission[]
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  createdAt    DateTime @default(now())
+  
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@index([permissionId])
+}
+
+model RefreshToken {
+  id         String   @id @default(cuid())
+  tokenHash  String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  revokedAt  DateTime?
+
+  @@index([userId])
+}
