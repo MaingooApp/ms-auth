@@ -26,6 +26,9 @@ COPY --from=deps /usr/src/app/node_modules ./node_modules
 # Copiar todo el codigo fuente de la aplicación
 COPY . .
 
+# Generar el cliente de Prisma
+RUN pnpm prisma generate
+
 # RUN pnpm run test
 RUN pnpm run build
 

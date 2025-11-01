@@ -39,7 +39,7 @@ export class AuthService extends PrismaClient implements OnModuleInit, OnModuleD
 
   async register(payload: RegisterUserDto): Promise<AuthResponse> {
     try {
-      const response = await this.$transaction(async (tx) => {
+      const response = await this.$transaction(async (tx: Prisma.TransactionClient) => {
         const existing = await tx.user.findUnique({
           where: { email: payload.email },
         });
@@ -113,7 +113,7 @@ export class AuthService extends PrismaClient implements OnModuleInit, OnModuleD
         throw new RpcException({ status: 400, message: 'Invalid credentials' });
       }
 
-      const { tokens } = await this.$transaction(async (tx) => {
+      const { tokens } = await this.$transaction(async (tx: Prisma.TransactionClient) => {
         const issuedTokens = await this.issueTokens(tx, user);
         return { tokens: issuedTokens };
       });
@@ -158,7 +158,7 @@ export class AuthService extends PrismaClient implements OnModuleInit, OnModuleD
         throw new RpcException({ status: 404, message: 'User not found' });
       }
 
-      const { tokens } = await this.$transaction(async (tx) => {
+      const { tokens } = await this.$transaction(async (tx: Prisma.TransactionClient) => {
         await tx.refreshToken.update({
           where: { id: tokenRecord.id },
           data: { revokedAt: new Date() },
@@ -374,10 +374,10 @@ export class AuthService extends PrismaClient implements OnModuleInit, OnModuleD
       return error;
     }
 
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error instanceof Error && 'code' in error) {
       return new RpcException({
         status: 400,
-        message: error.message,
+        message: (error as Error).message,
       });
     }
 
