@@ -11,7 +11,7 @@ import { NatsModule } from './transports/nats.module';
       global: true,
       secret: envs.jwtSecret,
       signOptions: {
-        expiresIn: envs.jwtExpiresIn,
+        expiresIn: envs.jwtExpiresIn as any,
         issuer: envs.jwtIssuer,
         audience: envs.jwtAudience,
       },

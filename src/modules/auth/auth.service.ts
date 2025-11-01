@@ -263,7 +263,7 @@ export class AuthService extends PrismaClient implements OnModuleInit, OnModuleD
 
     const accessToken = await this.jwtService.signAsync(payload, {
       secret: envs.jwtSecret,
-      expiresIn: envs.jwtExpiresIn,
+      expiresIn: envs.jwtExpiresIn as any,
       issuer: envs.jwtIssuer,
       audience: envs.jwtAudience,
     });
@@ -272,7 +272,7 @@ export class AuthService extends PrismaClient implements OnModuleInit, OnModuleD
 
     const refreshToken = await this.jwtService.signAsync(payload, {
       secret: envs.refreshJwtSecret,
-      expiresIn: envs.refreshExpiresIn,
+      expiresIn: envs.refreshExpiresIn as any,
       issuer: envs.jwtIssuer,
       audience: envs.jwtAudience,
       jwtid: refreshId,
