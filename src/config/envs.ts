@@ -17,7 +17,7 @@ const envSchema = joi
   .object<EnvVars>({
     PORT: joi.number().default(3001),
     NATS_SERVERS: joi.array().items(joi.string()).min(1).required(),
-    DATABASE_URL: joi.string().uri({ scheme: [/postgres/] }).required(),
+    DATABASE_URL: joi.string().uri({ scheme: [/postgresql/] }).required(),
     JWT_SECRET: joi.string().required(),
     JWT_EXPIRES_IN: joi.string().required(),
     REFRESH_JWT_SECRET: joi.string().required(),
