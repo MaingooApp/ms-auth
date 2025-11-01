@@ -17,7 +17,7 @@
     "noFallthroughCasesInSwitch": true,
     "noUnusedLocals": true,
     "noImplicitOverride": true,
-    "noPropertyAccessFromIndexSignature": true,
+    "noPropertyAccessFromIndexSignature": false,
     "skipLibCheck": true,
     "types": ["node", "jest"],
     "paths": {
