@@ -3,6 +3,5 @@
   "compilerOptions": {
     "outDir": "./dist"
   },
-  "include": ["src/**/*", "prisma/seed.ts"],
   "exclude": ["test", "**/*.spec.ts", "**/*.e2e-spec.ts"]
 }
