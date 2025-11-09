@@ -17,7 +17,7 @@ const natsOptions: NatsOptions = {
     reconnectTimeWait: 2000,
     timeout: 5000,
     name: 'ms-auth',
-    jetstream: true,
+    // Remover jetstream global - solo para eventos específicos
   },
 };
 
