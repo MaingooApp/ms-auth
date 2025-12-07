@@ -36,7 +36,7 @@ export class AuthController {
     return this.authService.profile(payload);
   }
 
-  @MessagePattern(AuthSubjects.userupdate)
+  @MessagePattern(AuthSubjects.userUpdate)
   userUpdate(@Payload() payload: UpdateUserRequestDto) {
     return this.authService.userUpdate(payload);
   }

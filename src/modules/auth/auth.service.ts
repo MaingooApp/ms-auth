@@ -216,6 +216,13 @@ export class AuthService extends PrismaClient implements OnModuleInit, OnModuleD
         updateData.phoneNumber = payload.data.phoneNumber;
       }
 
+      if (Object.keys(updateData).length === 0) {
+        throw new RpcException({
+          status: 400,
+          message: 'No fields to update',
+        });
+      }
+
       const updatedUser = await this.user.update({
         where: { id: payload.userId },
         data: updateData,
@@ -226,8 +233,6 @@ export class AuthService extends PrismaClient implements OnModuleInit, OnModuleD
         user: this.toAuthUser(updatedUser),
       };
     } catch (error) {
-      console.log('holaaaa');
-
       throw this.handleError(error);
     }
   }
