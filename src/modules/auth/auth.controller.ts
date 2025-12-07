@@ -8,6 +8,7 @@ import {
   ProfileRequestDto,
   RefreshTokenDto,
   RegisterUserDto,
+  UpdateUserRequestDto,
   VerifyTokenDto,
 } from './dto';
 
@@ -33,6 +34,11 @@ export class AuthController {
   @MessagePattern(AuthSubjects.profile)
   profile(@Payload() payload: ProfileRequestDto) {
     return this.authService.profile(payload);
+  }
+
+  @MessagePattern(AuthSubjects.userUpdate)
+  userUpdate(@Payload() payload: UpdateUserRequestDto) {
+    return this.authService.userUpdate(payload);
   }
 
   @MessagePattern(AuthSubjects.verify)

@@ -12,6 +12,7 @@ import {
   ProfileRequestDto,
   RefreshTokenDto,
   RegisterUserDto,
+  UpdateUserRequestDto,
   VerifyTokenDto,
 } from './dto';
 import type { AuthResponse, AuthTokens, AuthUser, JwtPayload } from './interfaces';
@@ -176,21 +177,60 @@ export class AuthService extends PrismaClient implements OnModuleInit, OnModuleD
 
   async profile(payload: ProfileRequestDto): Promise<{ user: AuthUser }> {
     try {
-      const user = await this.user.findUnique({
-        where: { id: payload.userId },
-        include: { role: true },
-      });
-
-      if (!user) {
-        throw new RpcException({ status: 404, message: 'User not found' });
-      }
-
-      if (payload.enterpriseId && user.enterpriseId !== payload.enterpriseId) {
-        throw new RpcException({ status: 403, message: 'Forbidden' });
-      }
+      const user = await this.findUserById(payload);
 
       return {
         user: this.toAuthUser(user),
+      };
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async userUpdate(payload: UpdateUserRequestDto) {
+    try {
+      await this.findUserById({
+        userId: payload.userId,
+        enterpriseId: payload.enterpriseId,
+      });
+
+      const updateData: any = {};
+
+      if (payload.data.name) {
+        updateData.name = payload.data.name;
+      }
+
+      if (payload.data.email) {
+        updateData.email = payload.data.email;
+      }
+
+      if (payload.data.password) {
+        updateData.passwordHash = await argon2.hash(payload.data.password);
+      }
+
+      if (payload.data.phonePrefix !== undefined) {
+        updateData.phonePrefix = payload.data.phonePrefix;
+      }
+
+      if (payload.data.phoneNumber !== undefined) {
+        updateData.phoneNumber = payload.data.phoneNumber;
+      }
+
+      if (Object.keys(updateData).length === 0) {
+        throw new RpcException({
+          status: 400,
+          message: 'No fields to update',
+        });
+      }
+
+      const updatedUser = await this.user.update({
+        where: { id: payload.userId },
+        data: updateData,
+        include: { role: true },
+      });
+
+      return {
+        user: this.toAuthUser(updatedUser),
       };
     } catch (error) {
       throw this.handleError(error);
@@ -386,5 +426,21 @@ export class AuthService extends PrismaClient implements OnModuleInit, OnModuleD
       status: 500,
       message: 'Internal server error',
     });
+  }
+
+  private async findUserById(payload: ProfileRequestDto) {
+    const user = await this.user.findUnique({
+      where: { id: payload.userId },
+      include: { role: true },
+    });
+
+    if (!user) {
+      throw new RpcException({ status: 404, message: 'User not found' });
+    }
+
+    if (payload.enterpriseId && user.enterpriseId !== payload.enterpriseId) {
+      throw new RpcException({ status: 403, message: 'Forbidden' });
+    }
+    return user;
   }
 }
