@@ -189,10 +189,15 @@ export class AuthService extends PrismaClient implements OnModuleInit, OnModuleD
 
   async userUpdate(payload: UpdateUserRequestDto) {
     try {
-      await this.findUserById({
+      const user = await this.findUserById({
         userId: payload.userId,
         enterpriseId: payload.enterpriseId,
       });
+
+      const isValid = await argon2.verify(user.passwordHash, payload.data.currentPassword);
+      if (!isValid) {
+        throw new RpcException({ status: 400, message: 'Invalid credentials' });
+      }
 
       const updateData: any = {};
 
@@ -223,14 +228,23 @@ export class AuthService extends PrismaClient implements OnModuleInit, OnModuleD
         });
       }
 
-      const updatedUser = await this.user.update({
-        where: { id: payload.userId },
-        data: updateData,
-        include: { role: true },
+      const response = await this.$transaction(async (tx: Prisma.TransactionClient) => {
+        const updatedUser = await tx.user.update({
+          where: { id: payload.userId },
+          data: updateData,
+          include: { role: true },
+        });
+
+        await tx.refreshToken.updateMany({
+          where: { userId: payload.userId, revokedAt: null },
+          data: { revokedAt: new Date() },
+        });
+
+        return { user: updatedUser };
       });
 
       return {
-        user: this.toAuthUser(updatedUser),
+        user: this.toAuthUser(response.user),
       };
     } catch (error) {
       throw this.handleError(error);
